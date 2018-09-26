@@ -1,0 +1,55 @@
+# ANOMALIES :
+# Author multiple affiliation, DOI '10.1007/978-3-540-68234-9_5'
+# Non-existing organization in GRID, DOI '10.1007/978-3-540-30103-5_26'
+# Pending affiliations, DOI '10.1007/978-0-387-35503-0_29' (rdf:label could be used)
+# No author-affiliation, DOI '10.1007/978-3-540-36715-4_41'
+# No conf entity, DOI '10.1007/978-3-540-76298-0_61'
+# No book or book_edition, DOI '10.1007/978-3-540-72667-8_12'
+
+prefix sg:<http://scigraph.springernature.com/ontologies/core/>
+prefix grid:<http://www.grid.ac/ontology/>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+select ?paper_doi ?conf_id ?conf_seriesId ?conf_acronym ?conf_name ?conf_city ?conf_country ?author_order ?author_givenName ?author_familyName ?org_gridId ?org_name ?org_city ?org_country ?org_countrycode ?affiliationString ?paper_title ?book_doi ?book_title ?book_subtitle ?rights ?year
+where {
+	?edition sg:title ?book_title ;
+		sg:subtitle ?book_subtitle ;
+		sg:bookType "Proceedings" .
+    optional {
+        ?edition sg:hasConference ?conf .
+        ?conf sg:acronym ?conf_acronym ;
+              sg:name ?conf_name ;
+              sg:country ?conf_country ;
+              sg:city ?conf_city ;
+              sg:hasConferenceSeries ?series .
+        ?series sg:dblpId ?conf_seriesId ;
+                sg:scigraphId ?conf_id .
+    }
+	?chapter sg:hasBookEdition ?edition ;
+		sg:doi ?paper_doi ; #paper_doi
+		sg:title ?paper_title ;
+		sg:hasContribution ?author ;
+		sg:copyrightYear ?year ;
+    	sg:hasBook ?book .
+    ?book sg:doi ?book_doi .
+	optional {
+		?chapter sg:bodyPdfRights ?rights .
+	}
+	?author sg:publishedFamilyName ?author_familyName ;
+			sg:order ?author_order .
+    optional {
+        ?author sg:publishedGivenName ?author_givenName .
+    }
+	optional {
+        ?author sg:hasAffiliation ?affiliation .
+		?affiliation sg:publishedName ?affiliationString .     
+		optional {
+            ?affiliation sg:hasOrganization ?org .
+            ?org grid:id ?org_gridId ;
+            	grid:hasAddress ?orgAddr ;
+            	rdfs:label ?org_name .
+            ?orgAddr grid:countryName ?org_country ;
+				grid:cityName ?org_city ;
+   				grid:countryCode ?org_countrycode .}
+	}
+}
